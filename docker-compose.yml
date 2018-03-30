@@ -1,0 +1,35 @@
+version: '3'
+services:
+  admin:
+    env_file:
+      - .env
+    environment:
+      - HOST=${ADMIN_HOST}
+      - PORT=${ADMIN_PORT}
+    build: ./admin
+    hostname: ${ADMIN_HOST}
+    ports:
+      - ${ADMIN_PUB_PORT}:${ADMIN_PORT}
+    links:
+      - data-gen:${DATA_GEN_HOST}
+      - postgres:${DB_HOST}
+    depends_on:
+      - postgres
+  data-gen:
+    env_file:
+      - .env
+    environment:
+      - HOST=${DATA_GEN_HOST}
+      - PORT=${DATA_GEN_PORT}
+    build: ./data-gen
+    hostname: ${DATA_GEN_HOST}
+    links:
+    - postgres:${DB_HOST}
+    depends_on:
+      - postgres
+  postgres:
+    image: postgres:9.6
+    volumes:
+      - dashboard-data:/var/lib/postgresql/data
+volumes:
+  dashboard-data:
