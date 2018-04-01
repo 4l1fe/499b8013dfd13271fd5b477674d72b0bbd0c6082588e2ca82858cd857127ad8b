@@ -1,8 +1,8 @@
 import flask
+import db
 from flask.globals import request
 from flask import jsonify
-from db import generate_data
-from config import *
+from config import HOST, PORT
 
 
 app = flask.Flask('data-gen')
@@ -11,7 +11,7 @@ app = flask.Flask('data-gen')
 @app.route('/generate', methods=['POST'])
 def generate():
     params = request.get_json()
-    data = generate_data(params['function'], params['start'], params['stop'], params['step'])
+    data = db.generate_data(params['function'], params['start'], params['stop'], params['step'])
     return jsonify(data)
 
 

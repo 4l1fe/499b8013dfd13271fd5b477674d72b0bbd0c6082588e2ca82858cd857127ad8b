@@ -13,14 +13,16 @@ services:
     links:
       - data-gen:${DATA_GEN_HOST}
       - postgres:${DB_HOST}
+      - highcharts:${HIGHCHARTS_HOST}
     depends_on:
       - postgres
+      - highcharts
 
   admin-db-gen:
     env_file:
       - .env
     build: ./admin
-    command: ["db.py"]
+    command: db.py
     depends_on:
       - postgres
     links:
@@ -43,6 +45,10 @@ services:
     image: postgres:9.6
     volumes:
       - dashboard-data:/var/lib/postgresql/data
+
+  highcharts:
+    image: onsdigital/highcharts-export-node
+    entrypoint: highcharts-export-server --enableServer 1 --port ${HIGHCHARTS_PORT}
 
 volumes:
   dashboard-data:

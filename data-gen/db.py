@@ -13,5 +13,5 @@ def generate_data(function, start, stop, step):
                            FROM (SELECT extract(epoch from generate_series(%s::timestamp, %s, %s)) as t) as timestamps"""
                            .format(function),
                         (start, stop, step))
-            result = cur.fetchall()
-    return result
+            data = cur.fetchall()
+    return data
