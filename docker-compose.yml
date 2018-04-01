@@ -15,6 +15,17 @@ services:
       - postgres:${DB_HOST}
     depends_on:
       - postgres
+
+  admin-db-gen:
+    env_file:
+      - .env
+    build: ./admin
+    command: ["db.py"]
+    depends_on:
+      - postgres
+    links:
+      - postgres:${DB_HOST}
+
   data-gen:
     env_file:
       - .env
@@ -27,9 +38,11 @@ services:
     - postgres:${DB_HOST}
     depends_on:
       - postgres
+
   postgres:
     image: postgres:9.6
     volumes:
       - dashboard-data:/var/lib/postgresql/data
+
 volumes:
   dashboard-data:

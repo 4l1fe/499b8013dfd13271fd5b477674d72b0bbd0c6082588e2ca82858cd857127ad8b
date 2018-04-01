@@ -10,4 +10,6 @@ COPY . $SERV_DIR
 
 WORKDIR $SERV_DIR
 
-CMD ["python3", "run.py"]
+ENTRYPOINT ["python3"]
+
+CMD ["run.py"]

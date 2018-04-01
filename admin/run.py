@@ -3,7 +3,7 @@ import requests
 from datetime import datetime, timedelta
 from flask.globals import request
 from flask import Response, make_response
-from db import save, save_img
+from db import insert
 from config import *
 
 
@@ -19,9 +19,10 @@ def show(): pass
 @app.route('/new', methods=['POST'])
 def new():
     params = request.get_json()
-    # save(params)
+    id_ = insert(params['function'], params['interval'], params['step'])
+    print("id:", id_)
 
-    now = datetime.now()
+    now = datetime.now()  #todo move defining, formating to data-gen
     stop = now.isoformat()
     start = (now - timedelta(days=int(params['interval']))).isoformat()
     resp = requests.post(data_gen_url, json={'function': params['function'], 'start': start, 'stop': stop, 'step': params['step']})

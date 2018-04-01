@@ -11,7 +11,7 @@ app = flask.Flask('data-gen')
 @app.route('/generate', methods=['POST'])
 def generate():
     params = request.get_json()
-    data = generate_data(params)
+    data = generate_data(params['function'], params['start'], params['stop'], params['step'])
     return jsonify(data)
 
 
