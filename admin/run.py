@@ -4,15 +4,15 @@ import logging
 import flask
 import requests
 import db
+import tasks
 from datetime import datetime, timedelta
 from flask.globals import request
 from flask import Response, make_response, send_file
-from config import *
+from config import DATA_GEN_HOST, DATA_GEN_PORT, HOST, PORT
 
 
 app = flask.Flask(__name__)
 DATA_GEN_URL = f'http://{DATA_GEN_HOST}:{DATA_GEN_PORT}/generate'
-IMG_GEN_URL = f'http://{HIGHCHARTS_HOST}:{HIGHCHARTS_PORT}'
 
 
 @app.route('/show', methods=['GET'])
@@ -31,33 +31,8 @@ def new():
     resp = requests.post(DATA_GEN_URL, json={'function': params['function'], 'start': start, 'stop': stop, 'step': params['step']})
     data = resp.json()
 
-    chart = {'infile':
-                {'xAxis': {
-                    'type': 'datetime'},
-                'series': [{
-                    'type': 'area',
-                    'data': data}]
-                }
-            }
-
-    is_file = False
-    try:
-        resp = requests.post(IMG_GEN_URL, json=chart)
-        logging.info(resp)
-        if resp.status_code != 200:
-            field = '{} {} {}'.format(resp.status_code, resp.reason, resp.text)
-        else:
-            field = resp.content
-            is_file = True
-    except Exception as e:
-        field = traceback.format_exc()
-
-    if is_file:
-        db.update(id_, image=field)
-        return send_file(io.BytesIO(field), mimetype='image/png')
-
-    db.update(id_, error=field)
-    return make_response(error)
+    tasks.generate_save_image.delay(data)
+    return make_response('ok')
 
 
 if __name__ == '__main__':

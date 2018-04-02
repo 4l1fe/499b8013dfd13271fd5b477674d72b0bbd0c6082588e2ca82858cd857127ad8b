@@ -13,10 +13,8 @@ services:
     links:
       - data-gen:${DATA_GEN_HOST}
       - postgres:${DB_HOST}
-      - highcharts:${HIGHCHARTS_HOST}
     depends_on:
       - postgres
-      - highcharts
 
   admin-db-gen:
     env_file:
@@ -27,6 +25,22 @@ services:
       - postgres
     links:
       - postgres:${DB_HOST}
+
+  admin-tasks:
+    env_file:
+      - .env
+    build: ./admin
+    entrypoint: celery --app tasks worker --loglevel=debug
+    depends_on:
+      - highcharts
+      - postgres
+      - redis
+      - rabbit
+    links:
+      - highcharts:${HIGHCHARTS_HOST}
+      - postgres:${DB_HOST}
+      - rabbit:${RABBIT_HOST}
+      - redis:${REDIS_HOST}
 
   data-gen:
     env_file:
@@ -41,14 +55,27 @@ services:
     depends_on:
       - postgres
 
+  highcharts:
+    image: onsdigital/highcharts-export-node
+    entrypoint: highcharts-export-server --enableServer 1 --port ${HIGHCHARTS_PORT}
+
   postgres:
     image: postgres:9.6
     volumes:
       - dashboard-data:/var/lib/postgresql/data
 
-  highcharts:
-    image: onsdigital/highcharts-export-node
-    entrypoint: highcharts-export-server --enableServer 1 --port ${HIGHCHARTS_PORT}
+  redis:
+    image: redis:4
+    volumes:
+      - tasks-result-data:/data
+    command: redis-server --appendonly yes --port ${REDIS_PORT}
+
+  rabbit:
+    image: rabbitmq:3.7
+    volumes:
+      - tasks-data:/var/lib/rabbitmq
 
 volumes:
   dashboard-data:
+  tasks-data:
+  tasks-result-data:
