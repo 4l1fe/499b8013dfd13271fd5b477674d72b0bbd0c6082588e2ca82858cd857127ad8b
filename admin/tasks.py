@@ -6,12 +6,12 @@ from celery import Celery
 from config import RABBIT_HOST, RABBIT_PORT, REDIS_HOST, REDIS_PORT, HIGHCHARTS_HOST, HIGHCHARTS_PORT
 
 
-app = Celery('tasks', broker=f'pyamqp://guest@{RABBIT_HOST}:{RABBIT_PORT}//', backend=f'redis://{REDIS_HOST}:{REDIS_PORT}')
+app = Celery('tasks', broker=f'pyamqp://{RABBIT_HOST}:{RABBIT_PORT}//', backend=f'redis://{REDIS_HOST}:{REDIS_PORT}')
 IMG_GEN_URL = f'http://{HIGHCHARTS_HOST}:{HIGHCHARTS_PORT}'
 
 
 @app.task
-def generate_save_image(data):
+def generate_save_image(id_, data):
     chart = {'infile':
                 {'xAxis': {
                     'type': 'datetime'},
@@ -35,6 +35,5 @@ def generate_save_image(data):
 
     if is_file:
         db.update(id_, image=field)
-        return send_file(io.BytesIO(field), mimetype='image/png')
-
-    db.update(id_, error=field)
+    else:
+        db.update(id_, error=field)

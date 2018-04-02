@@ -30,7 +30,7 @@ services:
     env_file:
       - .env
     build: ./admin
-    entrypoint: celery --app tasks worker --loglevel=debug
+    entrypoint: celery -A tasks worker -l debug --no-color
     depends_on:
       - highcharts
       - postgres
