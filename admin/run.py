@@ -5,34 +5,36 @@ import flask
 import requests
 import db
 import tasks
-from datetime import datetime, timedelta
 from flask.globals import request
 from flask import make_response
-from config import DATA_GEN_HOST, DATA_GEN_PORT, HOST, PORT
+from config import HOST, PORT
 
 
 app = flask.Flask(__name__)
-DATA_GEN_URL = f'http://{DATA_GEN_HOST}:{DATA_GEN_PORT}/generate'
+
+
+def _show():
+    return make_response('ok')
 
 
 @app.route('/show', methods=['GET'])
-def show(): pass
+def show():
+    return _show()
 
-#TODO psycopg2 -> psycopg2-binary
+# TODO:  psycopg2 -> psycopg2-binary
 @app.route('/new', methods=['POST'])
 def new():
     params = request.get_json()
     id_ = db.insert(params['function'], params['interval'], params['step'])
     logging.info("id: %s", id_)
+    return _show()
 
-    now = datetime.now()  #TODO move defining, formating to data-gen
-    stop = now.isoformat()
-    start = (now - timedelta(days=int(params['interval']))).isoformat()
-    resp = requests.post(DATA_GEN_URL, json={'function': params['function'], 'start': start, 'stop': stop, 'step': params['step']})
-    data = resp.json()
 
+@app.route('/img-gen/register', methods=['POST'])
+def register_generation():
+    params = request.get_json()
     tasks.generate_save_image.delay(id_, data)
-    return make_response('ok')
+    return _show()
 
 
 if __name__ == '__main__':

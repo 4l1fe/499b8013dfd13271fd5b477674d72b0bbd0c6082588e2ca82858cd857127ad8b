@@ -7,6 +7,7 @@ from config import RABBIT_HOST, RABBIT_PORT, REDIS_HOST, REDIS_PORT, HIGHCHARTS_
 
 
 app = Celery('tasks', broker=f'pyamqp://{RABBIT_HOST}:{RABBIT_PORT}//', backend=f'redis://{REDIS_HOST}:{REDIS_PORT}')
+DATA_GEN_URL = f'http://{DATA_GEN_HOST}:{DATA_GEN_PORT}/generate'
 IMG_GEN_URL = f'http://{HIGHCHARTS_HOST}:{HIGHCHARTS_PORT}'
 
 
@@ -23,6 +24,8 @@ def generate_save_image(id_, data):
 
     is_file = False
     try:
+        resp = requests.post(DATA_GEN_URL, json={'function': params['function'], 'interval': params['interval'], 'step': params['step']})
+        data = resp.json()
         resp = requests.post(IMG_GEN_URL, json=chart)
         logging.info(resp)
         if resp.status_code != 200:
@@ -37,3 +40,4 @@ def generate_save_image(id_, data):
         db.update(id_, image=field)
     else:
         db.update(id_, error=field)
+    # TODO: clean results

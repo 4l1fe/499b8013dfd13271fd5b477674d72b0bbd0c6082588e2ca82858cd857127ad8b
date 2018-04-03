@@ -8,7 +8,7 @@ DSN = f"host={DB_HOST} port={DB_PORT} dbname={DB_NAME} user={DB_USER} password={
 def generate_data(function, start, stop, step):
     step = f'{step} hour'
     with psycopg2.connect(DSN) as conn:
-        with conn.cursor() as cur: #todo funciton substitution
+        with conn.cursor() as cur: # TODO: funciton substitution
             cur.execute("""SELECT {} as x, t as y
                            FROM (SELECT extract(epoch from generate_series(%s::timestamp, %s, %s)) as t) as timestamps"""
                            .format(function),
