@@ -1,0 +1,29 @@
+<!doctype html>
+<title>Modelling dashboard</title>
+<body>
+<div class=page>
+  <table>
+    <thead>
+      <tr>
+        <td>id </td>
+        <td>function</td>
+        <td>interval</td>
+        <td>step</td>
+        <td>chart</td>
+        <td>error</td>
+      </tr>
+    </thead>
+    {% for raw in raws %}
+    <tr>
+      <td>{{ raw.id }}</td>
+      <td>{{ raw.function }}</td>
+      <td>{{ raw.interval }}</td>
+      <td>{{ raw.step }}</td>
+      <td>{% if raw.has_image %}<img src="/image/{{ raw.id }}" alt="">{% endif %}</td>
+      <td>{% if raw.error %}{{ raw.error }}{% endif %}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+</div>
+</body>

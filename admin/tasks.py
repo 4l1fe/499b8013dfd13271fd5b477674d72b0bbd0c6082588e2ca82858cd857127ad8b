@@ -3,7 +3,7 @@ import logging
 import requests
 import db
 from celery import Celery
-from config import RABBIT_HOST, RABBIT_PORT, REDIS_HOST, REDIS_PORT, HIGHCHARTS_HOST, HIGHCHARTS_PORT
+from config import *
 
 
 app = Celery('tasks', broker=f'pyamqp://{RABBIT_HOST}:{RABBIT_PORT}//', backend=f'redis://{REDIS_HOST}:{REDIS_PORT}')
