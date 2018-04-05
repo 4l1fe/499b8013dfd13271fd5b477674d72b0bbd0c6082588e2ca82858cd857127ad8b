@@ -2,7 +2,7 @@
 <title>Modelling dashboard</title>
 <body>
 <div class=page>
-  <form class="" action="{{ add_url }}" method="POST">
+  <form action="{{ add_url }}" method="POST">
     <input placeholder="function" type="text" name="function" value="">
     <input placeholder="interval" type="text" name="interval">
     <input placeholder="step" type="text" name="step">
@@ -10,11 +10,13 @@
   </form>
 
   <hr>
-
-  <table>
+  <form id="img_gen" action="{{ img_gen_url }}" method="POST">
+    <input type="submit" name="generate for selected">
+  </form>
+  <table border="1">
     <thead>
       <tr>
-        <td>id </td>
+        <td></td>
         <td>function</td>
         <td>interval</td>
         <td>step</td>
@@ -24,12 +26,12 @@
     </thead>
     {% for model in models %}
     <tr>
-      <td>{{ model.id }}</td>
+      <td><input type="checkbox" form="img_gen" name="id" value="{{ model.id }}"></td>
       <td>{{ model.function }}</td>
       <td>{{ model.interval }}</td>
       <td>{{ model.step }}</td>
       <td>{% if model.has_image %}<img src="{{ model.url }}" alt="">{% endif %}</td>
-      <td>{% if model.error %}{{ model.error }}{% endif %}</td>
+      <td>{{ model.error }}</td>
     </tr>
     {% endfor %}
   </table>

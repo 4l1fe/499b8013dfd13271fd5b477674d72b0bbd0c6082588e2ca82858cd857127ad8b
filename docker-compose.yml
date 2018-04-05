@@ -11,7 +11,6 @@ services:
     ports:
       - ${ADMIN_PUB_PORT}:${ADMIN_PORT}
     links:
-      - data_gen:${DATA_GEN_HOST}
       - postgres:${DB_HOST}
     depends_on:
       - postgres
@@ -32,11 +31,13 @@ services:
     build: ./admin
     entrypoint: celery -A tasks worker -l debug --no-color
     depends_on:
+      - data_gen
       - highcharts
       - postgres
       - redis
       - rabbit
     links:
+      - data_gen:${DATA_GEN_HOST}
       - highcharts:${HIGHCHARTS_HOST}
       - postgres:${DB_HOST}
       - rabbit:${RABBIT_HOST}

@@ -1,5 +1,4 @@
 import io
-import traceback
 import logging
 import flask
 import requests
@@ -19,7 +18,8 @@ def _main_page():
         if model['has_image']:
             model['url'] = url_for('get_image', id_=model['id'])
     add_url = url_for('add_model')
-    return render_template('main.html.j2', models=models, add_url=add_url)
+    img_gen_url = url_for('generate_image')
+    return render_template('main.html.j2', models=models, add_url=add_url, img_gen_url=img_gen_url)
 
 
 @app.route('/', methods=['GET'])
@@ -45,9 +45,11 @@ def add_model():
 
 
 @app.route('/image', methods=['POST'])
-def generate_image  ():
-    params = request.get_json()
-    tasks.generate_save_image.delay(id_, data)
+def generate_image():
+    id_list = request.form.getlist('id', type=int)
+    models = db.get_all(id_list=id_list)
+    for model in models:
+        tasks.generate_save_image.delay(model['id'], model['function'], model['interval'], model['step'])
     return _main_page()
 
 

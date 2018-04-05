@@ -1,5 +1,6 @@
 import io
 import logging
+import traceback
 import requests
 import db
 from celery import Celery
@@ -12,20 +13,20 @@ IMG_GEN_URL = f'http://{HIGHCHARTS_HOST}:{HIGHCHARTS_PORT}'
 
 
 @app.task
-def generate_save_image(id_, data):
-    chart = {'infile':
-                {'xAxis': {
-                    'type': 'datetime'},
-                'series': [{
-                    'type': 'area',
-                    'data': data}]
-                }
-            }
-
+def generate_save_image(id_, function, interval, step):
     is_file = False
     try:
-        resp = requests.post(DATA_GEN_URL, json={'function': params['function'], 'interval': params['interval'], 'step': params['step']})
+        resp = requests.post(DATA_GEN_URL, json={'function': function, 'interval': interval, 'step': step})
         data = resp.json()
+
+        chart = {'infile':
+                    {'xAxis': {
+                        'type': 'datetime'},
+                    'series': [{
+                        'type': 'area',
+                        'data': data}]
+                    }
+                }
         resp = requests.post(IMG_GEN_URL, json=chart)
         logging.info(resp)
         if resp.status_code != 200:

@@ -10,7 +10,7 @@ def connect(func):
 
     def wrapped(*args, **kwargs):
         with psycopg2.connect(DSN) as conn:
-            with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+            with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
                 args = args + (cursor, )
                 result = func(*args, **kwargs)
                 return result
@@ -19,9 +19,16 @@ def connect(func):
 
 
 @connect
-def get_all(cursor):
-    cursor.execute("""SELECT id, function, interval, step, (image IS NOT NULL) as has_image, error
-                   FROM models""")
+def get_all(cursor, id_list=None):
+    query = """SELECT id, function, interval, step, (image IS NOT NULL) as has_image, error
+               FROM models"""
+
+    if id_list:
+        query += " WHERE id = ANY(%s)"
+        cursor.execute(query, (id_list, ))
+    else:
+        cursor.execute(query)
+
     models = cursor.fetchall()
     return models
 
@@ -31,7 +38,7 @@ def get_image(id_, cursor):
     cursor.execute("""SELECT image
                    FROM models
                    WHERE id=%s""", (id_, ))
-    image = cursor.fetchone()[0]
+    image = cursor.fetchone()['image']
     return image
 
 
@@ -39,7 +46,7 @@ def get_image(id_, cursor):
 def insert(function, interval, step, cursor):
     cursor.execute("""INSERT INTO models (function, interval, step) VALUES(%s, %s, %s)
                    RETURNING id""", (function, interval, step))
-    id_ = cursor.fetchone()[0]
+    id_ = cursor.fetchone()['id']
     return id_
 
 
