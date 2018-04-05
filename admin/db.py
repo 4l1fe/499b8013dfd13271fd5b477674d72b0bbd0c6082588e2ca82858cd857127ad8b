@@ -21,15 +21,15 @@ def connect(func):
 @connect
 def get_all(cursor):
     cursor.execute("""SELECT id, function, interval, step, (image IS NOT NULL) as has_image, error
-                   FROM modeling""")
-    raws = cursor.fetchall()
-    return raws or []
+                   FROM models""")
+    models = cursor.fetchall()
+    return models
 
 
 @connect
 def get_image(id_, cursor):
     cursor.execute("""SELECT image
-                   FROM modeling
+                   FROM models
                    WHERE id=%s""", (id_, ))
     image = cursor.fetchone()[0]
     return image
@@ -37,7 +37,7 @@ def get_image(id_, cursor):
 
 @connect
 def insert(function, interval, step, cursor):
-    cursor.execute("""INSERT INTO modeling (function, interval, step) VALUES(%s, %s, %s)
+    cursor.execute("""INSERT INTO models (function, interval, step) VALUES(%s, %s, %s)
                    RETURNING id""", (function, interval, step))
     id_ = cursor.fetchone()[0]
     return id_
@@ -46,10 +46,10 @@ def insert(function, interval, step, cursor):
 @connect
 def update(id_, cursor, image=None, error=None):
     if image:
-        query = """UPDATE modeling SET image=%s WHERE id=%s"""
+        query = """UPDATE models SET image=%s WHERE id=%s"""
         field = psycopg2.Binary(image)
     elif error:
-        query = """UPDATE modeling SET error=%s WHERE id=%s"""
+        query = """UPDATE models SET error=%s WHERE id=%s"""
         field = error
 
     cursor.execute(query, (field, id_))
@@ -57,7 +57,7 @@ def update(id_, cursor, image=None, error=None):
 
 @connect
 def create_db(cursor):
-    cursor.execute("""CREATE TABLE IF NOT EXISTS modeling (
+    cursor.execute("""CREATE TABLE IF NOT EXISTS models (
                         id SERIAL PRIMARY KEY,
                         function TEXT NOT NULL,
                         interval SMALLINT NOT NULL,

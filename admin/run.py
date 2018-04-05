@@ -6,7 +6,7 @@ import requests
 import db
 import tasks
 from flask.globals import request
-from flask import render_template, send_file
+from flask import render_template, send_file, url_for
 from config import HOST, PORT
 
 
@@ -14,8 +14,12 @@ app = flask.Flask(__name__)
 
 
 def _main_page():
-    raws = db.get_all()
-    return render_template('main.html.j2', raws=raws)
+    models = db.get_all()
+    for model in models:
+        if model['has_image']:
+            model['url'] = url_for('get_image', id_=model['id'])
+    add_url = url_for('add_model')
+    return render_template('main.html.j2', models=models, add_url=add_url)
 
 
 @app.route('/', methods=['GET'])
@@ -33,9 +37,10 @@ def get_image(id_):
 # TODO:  psycopg2 -> psycopg2-binary
 @app.route('/model', methods=['POST'])
 def add_model():
-    params = request.get_json()
-    id_ = db.insert(params['function'], params['interval'], params['step'])
-    logging.info("id: %s", id_)
+    function = request.form['function']
+    interval = int(request.form['interval'])
+    step = int(request.form['step'])
+    id_ = db.insert(function, interval, step)
     return _main_page()
 
 
