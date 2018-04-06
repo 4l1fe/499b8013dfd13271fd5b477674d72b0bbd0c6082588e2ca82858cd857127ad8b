@@ -71,7 +71,7 @@ def create_db(cursor):
                         step SMALLINT NOT NULL,
                         error TEXT DEFAULT '',
                         image BYTEA)""")
-
+# TODO: поле даты обновления
 
 if __name__ == '__main__':
     create_db()
