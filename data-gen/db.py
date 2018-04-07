@@ -11,7 +11,7 @@ def generate_data(function, interval, step):
     interval = f'{interval} days'
     step = f'{step} hour'
     with psycopg2.connect(DSN) as conn:
-        with conn.cursor() as cur: # TODO: funciton substitution
+        with conn.cursor() as cur:
             cur.execute("""SELECT t, %(function)s
                            FROM (SELECT extract(epoch from generate_series(%(now)s - interval %(interval)s , %(now)s, %(step)s)) as t)
                                 as timestamps""",

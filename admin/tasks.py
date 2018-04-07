@@ -8,6 +8,7 @@ from config import *
 
 
 app = Celery('tasks', broker=f'pyamqp://{RABBIT_HOST}:{RABBIT_PORT}//', backend=f'redis://{REDIS_HOST}:{REDIS_PORT}')
+app.conf.result_expires = RESULT_EXPIRATION
 DATA_GEN_URL = f'http://{DATA_GEN_HOST}:{DATA_GEN_PORT}/generate'
 IMG_GEN_URL = f'http://{HIGHCHARTS_HOST}:{HIGHCHARTS_PORT}'
 
@@ -44,4 +45,3 @@ def generate_save_image(id_, function, interval, step):
         db.update(id_, image=field)
     else:
         db.update(id_, error=field)
-    # TODO: clean results

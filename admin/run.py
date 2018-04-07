@@ -4,11 +4,16 @@ import db
 import tasks
 from flask.globals import request
 from flask import render_template, send_file, url_for, redirect, Flask
-from config import HOST, PORT
+from celery import states
+from celery.result import AsyncResult
+from redis import Redis
+from config import HOST, PORT, REDIS_HOST, REDIS_PORT, RESULT_EXPIRATION
 
 
 app = Flask(__name__)
 ALL_ID = 0
+NS_ADMIN = 'admin:'
+NS_CREATED_TASK = NS_ADMIN + 'created-task:'
 
 
 @app.route('/', methods=['GET'])
@@ -38,14 +43,24 @@ def add_model():
 
 
 @app.route('/image', methods=['POST'])
-def generate_image(): # TODO: dont make a task if such id is processed
+def generate_image():
     id_list = request.form.getlist('id', type=int)
     if ALL_ID in id_list:
         id_list = None
 
+    r = Redis(host=REDIS_HOST, port=REDIS_PORT)
     models = db.get_all(id_list=id_list)
     for model in models:
-        tasks.generate_save_image.delay(model['id'], model['function'], model['interval'], model['step'])
+        task_id = str(model['id'])
+        task_state = tasks.app.AsyncResult(task_id).state
+        # задача создана и в процессе обработки
+        if r.exists(NS_CREATED_TASK+task_id) and task_state not in states.READY_STATES:
+            logging.warning(f'task {model["id"]} is processed')
+            continue
+
+        tasks.generate_save_image.apply_async(args=(model['id'], model['function'], model['interval'], model['step']),
+                                              task_id=task_id)
+        r.set(NS_CREATED_TASK+task_id, True, ex=RESULT_EXPIRATION)
     return redirect(url_for('main_page'))
 
 
