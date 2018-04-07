@@ -6,12 +6,12 @@
     <input placeholder="function" type="text" name="function" value="">
     <input placeholder="interval" type="text" name="interval">
     <input placeholder="step" type="text" name="step">
-    <input type="submit">
+    <input type="submit" value="Create">
   </form>
 
   <hr>
   <form id="img_gen" action="{{ img_gen_url }}" method="POST">
-    <input type="submit" name="generate for selected">
+    <input type="submit" value="Update selected">
   </form>
   <table>
     <thead>
@@ -21,7 +21,7 @@
         <td>interval</td>
         <td>step</td>
         <td>chart</td>
-        <td>error</td>
+        <td>updated</td>
       </tr>
     </thead>
     {% for model in models %}
@@ -30,8 +30,11 @@
       <td>{{ model.function }}</td>
       <td>{{ model.interval }}</td>
       <td>{{ model.step }}</td>
-      <td>{% if model.has_image %}<img src="{{ model.url }}" alt="">{% endif %}</td>
-      <td>{{ model.error }}</td>
+      <td>{% if model.error %}{{ model.error }}
+          {% elif model.has_image %}<img src="{{ model.url }}" alt="">
+          {% endif %}
+      </td>
+      <td>{% if model.updated %} {{ model.updated }} {% endif %}</td>
     </tr>
     {% endfor %}
   </table>

@@ -19,6 +19,9 @@ def generate_save_image(id_, function, interval, step):
         resp = requests.post(DATA_GEN_URL, json={'function': function, 'interval': interval, 'step': step})
         data = resp.json()
 
+        # приведение к длине числа highcharts
+        for item in data:
+            item[0] = int(item[0] * 1000)
         chart = {'infile':
                     {'xAxis': {
                         'type': 'datetime'},

@@ -52,14 +52,15 @@ def insert(function, interval, step, cursor):
 
 @connect
 def update(id_, cursor, image=None, error=None):
+    query = """UPDATE models SET updated=now(), {field_name}=%s WHERE id=%s"""
     if image:
-        query = """UPDATE models SET image=%s WHERE id=%s"""
-        field = psycopg2.Binary(image)
+        query = query.format(field_name='image')
+        field_value = psycopg2.Binary(image)
     elif error:
-        query = """UPDATE models SET error=%s WHERE id=%s"""
-        field = error
+        query = query.format(field_name='error')
+        field_value = error
 
-    cursor.execute(query, (field, id_))
+    cursor.execute(query, (field_value, id_))
 
 
 @connect
@@ -70,8 +71,9 @@ def create_db(cursor):
                         interval SMALLINT NOT NULL,
                         step SMALLINT NOT NULL,
                         error TEXT DEFAULT '',
-                        image BYTEA)""")
-# TODO: поле даты обновления
+                        image BYTEA,
+                        updated TIMESTAMP)""")
+
 
 if __name__ == '__main__':
     create_db()
