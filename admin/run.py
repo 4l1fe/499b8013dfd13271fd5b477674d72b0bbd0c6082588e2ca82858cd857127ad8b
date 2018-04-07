@@ -8,6 +8,7 @@ from config import HOST, PORT
 
 
 app = Flask(__name__)
+ALL_ID = 0
 
 
 @app.route('/', methods=['GET'])
@@ -18,7 +19,7 @@ def main_page():
             model['url'] = url_for('get_image', id_=model['id'])
     add_url = url_for('add_model')
     img_gen_url = url_for('generate_image')
-    return render_template('main.html.j2', models=models, add_url=add_url, img_gen_url=img_gen_url)
+    return render_template('main.html.j2', models=models, add_url=add_url, img_gen_url=img_gen_url, ALL_ID=ALL_ID)
 
 
 @app.route('/image/<int:id_>', methods=['GET'])
@@ -27,7 +28,6 @@ def get_image(id_):
     return send_file(io.BytesIO(image), mimetype='image/png')
 
 
-# TODO:  psycopg2 -> psycopg2-binary
 @app.route('/model', methods=['POST'])
 def add_model():
     function = request.form['function']
@@ -38,8 +38,11 @@ def add_model():
 
 
 @app.route('/image', methods=['POST'])
-def generate_image():
+def generate_image(): # TODO: dont make a task if such id is processed
     id_list = request.form.getlist('id', type=int)
+    if ALL_ID in id_list:
+        id_list = None
+
     models = db.get_all(id_list=id_list)
     for model in models:
         tasks.generate_save_image.delay(model['id'], model['function'], model['interval'], model['step'])
