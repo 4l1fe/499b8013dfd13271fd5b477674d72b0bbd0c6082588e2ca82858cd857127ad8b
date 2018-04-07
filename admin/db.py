@@ -20,14 +20,18 @@ def connect(func):
 
 @connect
 def get_all(cursor, id_list=None):
-    query = """SELECT id, function, interval, step, (image IS NOT NULL) as has_image, error
-               FROM models"""
+    query = """SELECT *, (image IS NOT NULL) as has_image
+               FROM models
+               {WHERE_STM}
+               ORDER BY function"""
 
+    where_stm = ""
+    vars_ = None
     if id_list:
-        query += " WHERE id = ANY(%s)"
-        cursor.execute(query, (id_list, ))
-    else:
-        cursor.execute(query)
+        where_stm = "WHERE id = ANY(%s)"
+        vars_ = (id_list, )
+
+    cursor.execute(query.format(WHERE_STM=where_stm), vars=vars_)
 
     models = cursor.fetchall()
     return models
@@ -36,8 +40,8 @@ def get_all(cursor, id_list=None):
 @connect
 def get_image(id_, cursor):
     cursor.execute("""SELECT image
-                   FROM models
-                   WHERE id=%s""", (id_, ))
+                      FROM models
+                      WHERE id=%s""", (id_, ))
     image = cursor.fetchone()['image']
     return image
 
@@ -45,22 +49,26 @@ def get_image(id_, cursor):
 @connect
 def insert(function, interval, step, cursor):
     cursor.execute("""INSERT INTO models (function, interval, step) VALUES(%s, %s, %s)
-                   RETURNING id""", (function, interval, step))
+                      RETURNING id""", (function, interval, step))
     id_ = cursor.fetchone()['id']
     return id_
 
 
 @connect
 def update(id_, cursor, image=None, error=None):
-    query = """UPDATE models SET updated=now(), {field_name}=%s WHERE id=%s"""
+    query = """UPDATE models SET updated=now(), {field_name}=%s {adn_expr}
+               WHERE id=%s"""
+
+    adn_expr = ""
     if image:
-        query = query.format(field_name='image')
+        adn_expr = ", error='' "
+        field_name = 'image'
         field_value = psycopg2.Binary(image)
     elif error:
-        query = query.format(field_name='error')
+        field_name = 'error'
         field_value = error
 
-    cursor.execute(query, (field_value, id_))
+    cursor.execute(query.format(field_name=field_name, adn_expr=adn_expr), (field_value, id_))
 
 
 @connect
