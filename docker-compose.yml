@@ -20,7 +20,7 @@ services:
       - .env
     build: ./admin
     entrypoint: /bin/bash -c "echo 'sleep'
-                          && sleep 4
+                          && sleep $ADMIN_DB_GEN_SLEEP
                           && echo 'woke up'
                           && python3 db.py"
     depends_on:
@@ -54,6 +54,8 @@ services:
       - PORT=${DATA_GEN_PORT}
     build: ./data-gen
     hostname: ${DATA_GEN_HOST}
+    ports:
+      - ${DATA_GEN_PUB_PORT}:${DATA_GEN_PORT}
     links:
     - postgres:${DB_HOST}
     depends_on:
@@ -61,7 +63,9 @@ services:
 
   highcharts:
     image: onsdigital/highcharts-export-node
-    entrypoint: highcharts-export-server --enableServer 1 --port ${HIGHCHARTS_PORT}
+    ports:
+      - ${HIGHCHARTS_PUB_PORT}:${HIGHCHARTS_PORT}
+    entrypoint: highcharts-export-server --enableServer 1 --port $HIGHCHARTS_PORT
 
   postgres:
     image: postgres:9.6
@@ -72,7 +76,7 @@ services:
     image: redis:4
     volumes:
       - tasks_result_data:/data
-    command: redis-server --appendonly yes --port ${REDIS_PORT}
+    command: redis-server --appendonly yes --port $REDIS_PORT
 
   rabbit:
     image: rabbitmq:3.7
