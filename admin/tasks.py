@@ -1,4 +1,3 @@
-import io
 import logging
 import traceback
 import requests
@@ -19,26 +18,25 @@ def generate_save_image(id_, function, interval, step):
     try:
         resp = requests.post(DATA_GEN_URL, json={'function': function, 'interval': interval, 'step': step})
         data = resp.json()
-
-        # приведение к длине числа highcharts
+        # приведение к милисекундам highcharts
         for item in data:
-            item[0] = int(item[0] * 1000)
-        chart = {'infile':
-                    {'xAxis': {
-                        'type': 'datetime'},
-                    'series': [{
-                        'type': 'area',
-                        'data': data}]
-                    }
-                }
-        resp = requests.post(IMG_GEN_URL, json=chart)
-        logging.info(resp)
+            item[0] = int(item[0]) * 1000
+        params = {'infile':
+            {'xAxis': {
+                'type': 'datetime'},
+                'series': [{
+                    'data': data,
+                    'type': 'area',}]
+            }
+        }
+        logging.debug(params)
+        resp = requests.post(IMG_GEN_URL, json=params)
         if resp.status_code != 200:
             field = '{} {} {}'.format(resp.status_code, resp.reason, resp.text)
         else:
             field = resp.content
             is_file = True
-    except Exception as e:
+    except Exception:
         field = traceback.format_exc()
 
     if is_file:

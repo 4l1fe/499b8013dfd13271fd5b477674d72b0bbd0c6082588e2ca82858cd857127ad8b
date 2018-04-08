@@ -12,9 +12,9 @@ def generate_data(function, interval, step):
     step = f'{step} hour'
     with psycopg2.connect(DSN) as conn:
         with conn.cursor() as cur:
-            cur.execute("""SELECT t, %(function)s
-                           FROM (SELECT extract(epoch from generate_series(%(now)s - interval %(interval)s , %(now)s, %(step)s)) as t)
-                                as timestamps""",
-                        {'function': function, 'now': now, 'interval': interval, 'step': step})
+            cur.execute(f"""SELECT t, {function}
+                            FROM (SELECT extract(epoch from generate_series(%(now)s - interval %(interval)s , %(now)s, %(step)s)) as t)
+                                 as timestamps""",
+                        {'now': now, 'interval': interval, 'step': step})
             data = cur.fetchall()
     return data

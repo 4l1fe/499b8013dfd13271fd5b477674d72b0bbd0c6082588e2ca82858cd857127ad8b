@@ -1,6 +1,5 @@
 import flask
 import db
-from datetime import datetime, timedelta
 from flask.globals import request
 from flask import jsonify
 from config import HOST, PORT

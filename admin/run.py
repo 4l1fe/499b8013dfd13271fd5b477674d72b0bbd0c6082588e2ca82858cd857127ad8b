@@ -5,7 +5,6 @@ import tasks
 from flask.globals import request
 from flask import render_template, send_file, url_for, redirect, Flask
 from celery import states
-from celery.result import AsyncResult
 from redis import Redis
 from config import HOST, PORT, REDIS_HOST, REDIS_PORT, RESULT_EXPIRATION
 
